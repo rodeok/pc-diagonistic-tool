@@ -7,6 +7,9 @@ lifespan estimation, and visual analytics with bar charts
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
+import matplotlib
+# Explicitly set backend for Tkinter to avoid backend discovery issues in frozen apps
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import psutil
@@ -627,7 +630,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             item = self.status_tree.insert('', 'end', text=component.title(), 
                                          values=(f"{health_score:.1f}%", status, details))
             
-            # Color coding (simplified - tkinter treeview doesn't support easy cell coloring)
             if status == "POOR":
                 self.status_tree.set(item, 'Status', f"⚠ {status}")
             elif status == "FAIR":
@@ -665,11 +667,9 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
     
     def update_analytics(self):
         """Update analytics charts"""
-        # Clear previous plots
         for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
             ax.clear()
         
-        # Chart 1: Health Scores Bar Chart
         components = list(self.health_scores.keys())
         scores = list(self.health_scores.values())
         colors = ['red' if s < 60 else 'orange' if s < 80 else 'green' for s in scores]
@@ -680,7 +680,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
         self.ax1.set_ylim(0, 100)
         self.ax1.tick_params(axis='x', rotation=45)
         
-        # Chart 2: Memory Usage
         if 'memory' in self.diagnostic_data:
             mem_data = self.diagnostic_data['memory']
             used = mem_data.get('used_percent', 0)
@@ -690,7 +689,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                         colors=['red' if used > 80 else 'orange' if used > 70 else 'lightblue', 'lightgreen'])
             self.ax2.set_title('Memory Usage')
         
-        # Chart 3: Storage Usage
         if 'storage' in self.diagnostic_data:
             storage_data = self.diagnostic_data['storage']
             devices = []
@@ -708,7 +706,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                 self.ax3.set_xlabel('Usage (%)')
                 self.ax3.set_xlim(0, 100)
         
-        # Chart 4: Temperature Overview
         if 'temperature' in self.diagnostic_data:
             temp_data = self.diagnostic_data['temperature']
             if temp_data and not temp_data.get('error'):
@@ -717,7 +714,7 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                 
                 for name, data in temp_data.items():
                     if isinstance(data, dict) and 'current' in data:
-                        temp_names.append(name.split('_')[-1])  # Get sensor name
+                        temp_names.append(name.split('_')[-1])
                         temp_values.append(data['current'])
                 
                 if temp_names:
@@ -727,12 +724,10 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                     self.ax4.set_ylabel('Temperature (°C)')
                     self.ax4.tick_params(axis='x', rotation=45)
                     
-                    # Add danger zones
                     self.ax4.axhline(y=70, color='orange', linestyle='--', alpha=0.5, label='Warning')
                     self.ax4.axhline(y=80, color='red', linestyle='--', alpha=0.5, label='Critical')
                     self.ax4.legend()
         
-        # Adjust layout and refresh
         self.fig.tight_layout()
         self.canvas.draw()
     
@@ -744,7 +739,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
         
         report += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         
-        # System Information
         if 'system' in self.diagnostic_data:
             sys_data = self.diagnostic_data['system']
             report += "SYSTEM INFORMATION:\n"
@@ -753,7 +747,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                 report += f"{key.replace('_', ' ').title()}: {value}\n"
             report += "\n"
         
-        # Battery Details
         if 'battery' in self.diagnostic_data:
             battery_data = self.diagnostic_data['battery']
             report += "BATTERY ANALYSIS:\n"
@@ -773,7 +766,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                 report += "No battery detected (Desktop system)\n"
             report += "\n"
         
-        # Memory Details
         if 'memory' in self.diagnostic_data:
             mem_data = self.diagnostic_data['memory']
             report += "MEMORY ANALYSIS:\n"
@@ -786,7 +778,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             report += f"Estimated Remaining Life: {mem_data.get('estimated_remaining_years', 0):.1f} years\n"
             report += "\n"
         
-        # Storage Details
         if 'storage' in self.diagnostic_data:
             storage_data = self.diagnostic_data['storage']
             report += "STORAGE ANALYSIS:\n"
@@ -804,7 +795,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                     report += f"  Est. Remaining Life: {data.get('estimated_remaining_years', 0):.1f} years\n"
                     report += "\n"
         
-        # Temperature Details
         if 'temperature' in self.diagnostic_data:
             temp_data = self.diagnostic_data['temperature']
             report += "TEMPERATURE MONITORING:\n"
@@ -823,7 +813,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             else:
                 report += "Temperature sensors not available or accessible\n\n"
         
-        # Performance Details
         if 'performance' in self.diagnostic_data:
             perf_data = self.diagnostic_data['performance']
             report += "PERFORMANCE ANALYSIS:\n"
@@ -835,7 +824,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             report += f"Performance Health Score: {perf_data.get('health_score', 0):.1f}%\n"
             report += "\n"
         
-        # Overall Assessment
         report += "OVERALL ASSESSMENT:\n"
         report += "-" * 30 + "\n"
         
@@ -854,7 +842,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             
             report += "\nRecommendations:\n"
             
-            # Generate recommendations
             for component, health in self.health_scores.items():
                 if health < 60:
                     if component == 'battery':
@@ -877,7 +864,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             self.predictions_tree.delete(item)
         
         for component, pred_data in self.predictions.items():
-            risk_color = ""
             if pred_data['risk_level'] == 'HIGH':
                 risk_symbol = "🔴 HIGH"
             elif pred_data['risk_level'] == 'MEDIUM':
@@ -898,7 +884,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
         if self.health_scores:
             overall_health = sum(self.health_scores.values()) / len(self.health_scores)
             
-            # Overall status
             if overall_health >= 85:
                 status_emoji = "🟢"
                 status_text = "EXCELLENT"
@@ -915,7 +900,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
             summary += f"Overall: {status_emoji} {status_text}\n"
             summary += f"Score: {overall_health:.1f}%\n\n"
             
-            # Component breakdown
             for component, health in sorted(self.health_scores.items()):
                 if health >= 80:
                     emoji = "🟢"
@@ -926,7 +910,6 @@ Uptime: {sys_info.get('uptime_hours', 0):.1f} hours"""
                 
                 summary += f"{emoji} {component.title()}: {health:.0f}%\n"
             
-            # Warnings count
             high_risk = sum(1 for pred in self.predictions.values() 
                           if pred.get('risk_level') == 'HIGH')
             if high_risk > 0:
@@ -967,11 +950,9 @@ def main():
         return
     
     try:
-        # Create and run GUI
         root = tk.Tk()
         app = AdvancedDiagnosticGUI(root)
         
-        # Center window on screen
         root.update_idletasks()
         width = root.winfo_width()
         height = root.winfo_height()
@@ -984,7 +965,10 @@ def main():
         
     except Exception as e:
         print(f"Error starting application: {e}")
-        messagebox.showerror("Error", f"Failed to start application: {e}")
+        try:
+            messagebox.showerror("Error", f"Failed to start application: {e}")
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     main()
