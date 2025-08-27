@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-"""
-Advanced PC Diagnostic Tool with GUI and Predictive Analytics
-Features: Battery health, RAM analysis, HDD/SSD health, failure prediction,
-lifespan estimation, and visual analytics with bar charts
-"""
+
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
