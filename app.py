@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import matplotlib
-# Explicitly set backend for Tkinter to avoid backend discovery issues in frozen apps
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
